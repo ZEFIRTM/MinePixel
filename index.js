@@ -53,11 +53,11 @@ window.addEventListener("load", function ()
   }
 
   var buildUrl = "Build";
-  var loaderUrl = buildUrl + "/5ccf0e822b904d60666260a7c57c7b10.loader.js";
+  var loaderUrl = buildUrl + "/3062e4bb6c71ccd52396c37d480cc9ee.loader.js";
   var config = {
-    dataUrl: buildUrl + "/33e442238a39c78ead11fbffbe8c4671.data.unityweb",
+    dataUrl: buildUrl + "/4eaa552aaef3ebfe435c8f7b7e1a6b03.data.unityweb",
     frameworkUrl: buildUrl + "/08e27d5d5174cf582e0167480cd86567.framework.js.unityweb",
-    codeUrl: buildUrl + "/7d459bc2081b7c8ca4c6ed1963059877.wasm.unityweb",
+    codeUrl: buildUrl + "/26b8cb375b8ab1436eec3ba00c9164b6.wasm.unityweb",
     streamingAssetsUrl: "StreamingAssets",
     companyName: "d4rk_ltd",
     productName: "MinePixel",
