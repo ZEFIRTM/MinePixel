@@ -55,13 +55,13 @@ window.addEventListener("load", function ()
   var buildUrl = "Build";
   var loaderUrl = buildUrl + "/3062e4bb6c71ccd52396c37d480cc9ee.loader.js";
   var config = {
-    dataUrl: buildUrl + "/4eaa552aaef3ebfe435c8f7b7e1a6b03.data.unityweb",
+    dataUrl: buildUrl + "/5899fd7e56594e97e4a0b0142c281115.data.unityweb",
     frameworkUrl: buildUrl + "/08e27d5d5174cf582e0167480cd86567.framework.js.unityweb",
     codeUrl: buildUrl + "/26b8cb375b8ab1436eec3ba00c9164b6.wasm.unityweb",
     streamingAssetsUrl: "StreamingAssets",
     companyName: "d4rk_ltd",
     productName: "MinePixel",
-    productVersion: "0.1.1",
+    productVersion: "0.1.2",
     showBanner: unityShowBanner,
   };
 
@@ -127,3 +127,34 @@ window.addEventListener("load", function ()
     console.log(`Telegram Web App checked` +
         `latest version status with result: ${Telegram.WebApp.isVersionAtLeast(version)}`);
   });
+
+  // Принудительное обновление Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/ServiceWorker.js').then(function(registration) {
+        console.log('[Service Worker] Registered');
+
+        // Проверяем наличие обновлений
+        registration.update();
+
+        // Обработчик события обновления
+        registration.onupdatefound = function() {
+            const installingWorker = registration.installing;
+            console.log('[Service Worker] Update found');
+
+            installingWorker.onstatechange = function() {
+                if (installingWorker.state === 'installed') {
+                    if (navigator.serviceWorker.controller) {
+                        // Новая версия доступна, уведомляем пользователя
+                        console.log('[Service Worker] New version available');
+                        // Здесь вы можете добавить логику для уведомления пользователя
+                        alert('Новое обновление доступно! Пожалуйста, перезагрузите страницу.');
+                    } else {
+                        console.log('[Service Worker] Content is cached for offline use.');
+                    }
+                }
+            };
+        };
+    }).catch(function(error) {
+        console.error('[Service Worker] Registration failed:', error);
+    });
+  }
