@@ -1,33 +1,64 @@
-const cacheName = "d4rk_ltd-MinePixel-0.1.4";
+const cacheName = `game-cache-v${Date.now()}`; // Уникальное имя кэша для каждой версии
 const contentToCache = [
-    "Build/ab27b5aca0225add9b5861aa510b55c3.loader.js",
-    "Build/ddcc48b07ea5017a31867f1ae0bc3a11.framework.js.unityweb",
-    "Build/e0d35b5a2b59306d255eff338af06b8c.data.unityweb",
-    "Build/53abba5fa264817db79adaa12f7bfc05.wasm.unityweb",
-    "TemplateData/style.css"
-
+    "./", // index.html
+    "./Build/WebGL.framework.js",
+    "./Build/WebGL.data.unityweb",
+    "./Build/WebGL.wasm.unityweb",
+    "./Build/WebGL.loader.js",
+    "./TemplateData/style.css"
 ];
 
+// Установка Service Worker
 self.addEventListener('install', function (e) {
-    console.log('[Service Worker] Install');
-    
-    e.waitUntil((async function () {
-      const cache = await caches.open(cacheName);
-      console.log('[Service Worker] Caching all: app shell and content');
-      await cache.addAll(contentToCache);
-    })());
+    console.log('[Service Worker] Устанавливаем новую версию...');
+    e.waitUntil(
+        caches.open(cacheName).then(function (cache) {
+            console.log('[Service Worker] Кэшируем ресурсы:', contentToCache);
+            return cache.addAll(contentToCache);
+        })
+    );
 });
 
-self.addEventListener('fetch', function (e) {
-    e.respondWith((async function () {
-      let response = await caches.match(e.request);
-      console.log(`[Service Worker] Fetching resource: ${e.request.url}`);
-      if (response) { return response; }
+// Активация Service Worker
+self.addEventListener('activate', function (e) {
+    console.log('[Service Worker] Активация новой версии...');
+    e.waitUntil(
+        caches.keys().then(function (keys) {
+            return Promise.all(
+                keys.map(function (key) {
+                    if (key !== cacheName) {
+                        console.log('[Service Worker] Удаляем старый кэш:', key);
+                        return caches.delete(key);
+                    }
+                })
+            );
+        })
+    );
+    return self.clients.claim(); // Гарантируем активацию нового Service Worker
+});
 
-      response = await fetch(e.request);
-      const cache = await caches.open(cacheName);
-      console.log(`[Service Worker] Caching new resource: ${e.request.url}`);
-      cache.put(e.request, response.clone());
-      return response;
-    })());
+// Обработка запросов
+self.addEventListener('fetch', function (e) {
+    console.log('[Service Worker] Перехватываем запрос:', e.request.url);
+
+    // Для index.html всегда загружаем свежую версию
+    if (e.request.mode === 'navigate' || e.request.url.includes('index.html')) {
+        console.log('[Service Worker] Загружаем актуальную версию index.html');
+        return e.respondWith(fetch(e.request));
+    }
+
+    // Для остальных ресурсов пытаемся загрузить из кэша
+    e.respondWith(
+        caches.match(e.request).then(function (response) {
+            return response || fetch(e.request);
+        })
+    );
+});
+
+// Принудительное обновление при обновлении Service Worker
+self.addEventListener('message', function (event) {
+    if (event.data === 'SKIP_WAITING') {
+        console.log('[Service Worker] Принудительная активация новой версии');
+        self.skipWaiting();
+    }
 });
