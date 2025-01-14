@@ -1,4 +1,11 @@
-const cacheName = `game-cache-v${Date.now()}`; // Уникальное имя кэша для каждой версии
+const CACHE_NAME = 'game-cache-v' + Date.now();
+const CRITICAL_FILES = [
+    'index.html',
+    'WebGL.framework.js',
+    'WebGL.data',
+    'WebGL.wasm'
+];
+
 const contentToCache = [
     "./", // index.html
     "./Build/WebGL.framework.js",
@@ -9,61 +16,58 @@ const contentToCache = [
 ];
 
 // Установка Service Worker
-self.addEventListener('install', function (e) {
-    console.log('[Service Worker] Устанавливаем новую версию...');
-    e.waitUntil(
-        caches.open(cacheName).then(function (cache) {
-            console.log('[Service Worker] Кэшируем ресурсы:', contentToCache);
-            return cache.addAll(contentToCache);
-        })
-    );
+self.addEventListener('install', (event) => {
+    event.waitUntil(self.skipWaiting());
 });
 
 // Активация Service Worker
 self.addEventListener('activate', (event) => {
     event.waitUntil(
-        caches.keys().then((keyList) => {
-            return Promise.all(keyList.map((key) => {
-                if (key !== cacheName) {
-                    return caches.delete(key);
-                }
-            }));
-        })
+        Promise.all([
+            self.clients.claim(),
+            caches.keys().then(keys => Promise.all(
+                keys.map(key => {
+                    if (key !== CACHE_NAME) {
+                        return caches.delete(key);
+                    }
+                })
+            ))
+        ])
     );
-    return self.clients.claim(); // Гарантируем активацию нового Service Worker
 });
 
 // Обработка запросов
 self.addEventListener('fetch', (event) => {
     console.log('[Service Worker] Перехватываем запрос:', event.request.url);
 
-    // Для index.html и основных скриптов всегда загружаем свежую версию
-    if (event.request.url.includes('index.html') || 
-        event.request.url.includes('WebGL.framework.js') ||
-        event.request.url.includes('WebGL.data') ||
-        event.request.url.includes('WebGL.wasm')) {
-        
+    const isCriticalFile = CRITICAL_FILES.some(file => 
+        event.request.url.includes(file)
+    );
+
+    if (isCriticalFile) {
         event.respondWith(
-            fetch(event.request, { 
+            fetch(event.request, {
                 cache: 'no-store',
-                headers: { 'Cache-Control': 'no-cache' }
-            })
+                headers: new Headers({
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                })
+            }).catch(() => caches.match(event.request))
         );
         return;
     }
-    
+
     event.respondWith(
-        fetch(event.request)
-            .then(response => {
-                return response;
-            })
+        fetch(event.request).catch(() => 
+            caches.match(event.request)
+        )
     );
 });
 
 // Принудительное обновление при обновлении Service Worker
-self.addEventListener('message', function (event) {
+self.addEventListener('message', (event) => {
     if (event.data === 'SKIP_WAITING') {
-        console.log('[Service Worker] Принудительная активация новой версии');
         self.skipWaiting();
     }
 });
