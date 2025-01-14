@@ -20,44 +20,43 @@ self.addEventListener('install', function (e) {
 });
 
 // Активация Service Worker
-self.addEventListener('activate', function (e) {
-    console.log('[Service Worker] Активация новой версии...');
-    e.waitUntil(
-        caches.keys().then(function (keys) {
-            return Promise.all(
-                keys.map(function (key) {
-                    if (key !== cacheName) {
-                        console.log('[Service Worker] Удаляем старый кэш:', key);
-                        return caches.delete(key);
-                    }
-                })
-            );
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        caches.keys().then((keyList) => {
+            return Promise.all(keyList.map((key) => {
+                if (key !== cacheName) {
+                    return caches.delete(key);
+                }
+            }));
         })
     );
     return self.clients.claim(); // Гарантируем активацию нового Service Worker
 });
 
 // Обработка запросов
-self.addEventListener('fetch', function (e) {
-    console.log('[Service Worker] Перехватываем запрос:', e.request.url);
+self.addEventListener('fetch', (event) => {
+    console.log('[Service Worker] Перехватываем запрос:', event.request.url);
 
     // Для index.html и основных скриптов всегда загружаем свежую версию
-    if (e.request.mode === 'navigate' || 
-        e.request.url.includes('index.html') ||
-        e.request.url.includes('index.js') ||
-        e.request.url.includes('WebGL.framework.js')) {
-        return e.respondWith(
-            fetch(e.request, {
-                cache: 'no-store'
+    if (event.request.url.includes('index.html') || 
+        event.request.url.includes('WebGL.framework.js') ||
+        event.request.url.includes('WebGL.data') ||
+        event.request.url.includes('WebGL.wasm')) {
+        
+        event.respondWith(
+            fetch(event.request, { 
+                cache: 'no-store',
+                headers: { 'Cache-Control': 'no-cache' }
             })
         );
+        return;
     }
-
-    // Для остальных ресурсов пытаемся загрузить из кэша
-    e.respondWith(
-        caches.match(e.request).then(function (response) {
-            return response || fetch(e.request);
-        })
+    
+    event.respondWith(
+        fetch(event.request)
+            .then(response => {
+                return response;
+            })
     );
 });
 
