@@ -41,10 +41,16 @@ self.addEventListener('activate', function (e) {
 self.addEventListener('fetch', function (e) {
     console.log('[Service Worker] Перехватываем запрос:', e.request.url);
 
-    // Для index.html всегда загружаем свежую версию
-    if (e.request.mode === 'navigate' || e.request.url.includes('index.html')) {
-        console.log('[Service Worker] Загружаем актуальную версию index.html');
-        return e.respondWith(fetch(e.request));
+    // Для index.html и основных скриптов всегда загружаем свежую версию
+    if (e.request.mode === 'navigate' || 
+        e.request.url.includes('index.html') ||
+        e.request.url.includes('index.js') ||
+        e.request.url.includes('WebGL.framework.js')) {
+        return e.respondWith(
+            fetch(e.request, {
+                cache: 'no-store'
+            })
+        );
     }
 
     // Для остальных ресурсов пытаемся загрузить из кэша
