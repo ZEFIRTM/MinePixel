@@ -33,23 +33,16 @@
       let isLoading = true;
       let isUnityStarted = false;
       let hasError = false;
+      const LOADING_TIMEOUT = 60000; // Увеличим до 60 секунд
       let loadingTimeout = null;
-      const LOADING_TIMEOUT = 30000; // 30 секунд
       let reloadAttempts = 0;
       const MAX_RELOAD_ATTEMPTS = 3;
-
+      
       function updateStatus(status) {
           const statusElement = document.getElementById('debug-status');
           if (statusElement) {
-              statusElement.textContent = `Статус: ${status} | Попытки: ${reloadAttempts} | v0.1.7`;
-          }
-      }
-
-      function handleLoadingTimeout() {
-          if (isLoading && !hasError) {
-              hasError = true;
-              updateStatus('Ошибка загрузки: превышено время ожидания');
-              location.reload();
+              // Версия будет подставляться из Unity
+              statusElement.textContent = `Статус: ${status} | Попытки: ${reloadAttempts} | ${unityInstance?.GetGameVersion?.() || 'Загрузка версии...'}`;
           }
       }
 
@@ -60,11 +53,16 @@
           isLoading = true;
           updateStatus('Инициализация Unity...');
           
-          // Установка таймера загрузки
-          loadingTimeout = setTimeout(handleLoadingTimeout, LOADING_TIMEOUT);
+          loadingTimeout = setTimeout(() => {
+              if (isLoading) {
+                  hasError = true;
+                  updateStatus('Таймаут загрузки');
+                  // Не делаем автоматический reload
+              }
+          }, LOADING_TIMEOUT);
 
           createUnityInstance(document.querySelector("#unity-canvas"), {
-              // ...existing Unity config...
+              // ...existing config...
           }).then((instance) => {
               clearTimeout(loadingTimeout);
               unityInstance = instance;
@@ -72,34 +70,15 @@
               updateStatus('Загрузка завершена');
           }).catch((error) => {
               clearTimeout(loadingTimeout);
+              console.error('Unity error:', error);
               isUnityStarted = false;
               hasError = true;
-              updateStatus('Критическая ошибка загрузки');
+              updateStatus('Ошибка Unity');
           });
       }
 
-      // Предотвращение автоперезагрузок
-      window.addEventListener('beforeunload', function(e) {
-          if (isLoading || !isUnityStarted) {
-              e.preventDefault();
-              e.returnValue = '';
-              return false;
-          }
-      });
-
-      // Обработка ошибок
-      window.addEventListener('error', function(e) {
-          hasError = true;
-          updateStatus('Ошибка выполнения');
-          e.preventDefault();
-      });
-
-      // Безопасный запуск Unity
-      if (document.readyState === 'complete') {
-          setTimeout(createUnity, 1000);
-      } else {
-          window.addEventListener('load', () => setTimeout(createUnity, 1000));
-      }
+      // Запускаем Unity с задержкой
+      window.addEventListener('load', () => setTimeout(createUnity, 2000));
     </script>
   </body>
 </html>

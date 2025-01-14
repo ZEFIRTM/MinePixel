@@ -69,6 +69,22 @@ window.addEventListener("load", function () {
   }
 });
 
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('ServiceWorker.js')
+        .then(registration => {
+            registration.update();
+            
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'activated') {
+                        window.location.reload();
+                    }
+                });
+            });
+        });
+}
+
 // Остальная часть кода
 var unityInstanceRef;
 var unsubscribe;
