@@ -3,9 +3,9 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Expires" content="-1">
     <title>MinePixel</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
@@ -13,6 +13,16 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@2.0.9/dist/tonconnect-ui.min.js"></script>
     <script src="https://unpkg.com/tonweb@0.0.66/dist/tonweb.js"></script>
+    <script>
+        // Отключаем ServiceWorker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                }
+            });
+        }
+    </script>
   </head>
   <body>
     <div id="unity-container">
@@ -29,74 +39,46 @@
     </div>
     <script src="index.js"></script>
     <script>
-      let unityInstance = null;
-      let isUnityStarted = false;
-      let loadStartTime = 0;
+        let unityInstance = null;
+        let isLoading = false;
 
-      function updateStatus(status) {
-          const statusElement = document.getElementById('debug-status');
-          if (statusElement && unityInstance) {
-              try {
-                  const version = unityInstance.GetGameVersion();
-                  statusElement.textContent = `Статус: ${status} | v${version}`;
-              } catch {
-                  statusElement.textContent = `Статус: ${status}`;
-              }
-          } else if (statusElement) {
-              statusElement.textContent = `Статус: ${status}`;
-          }
-      }
+        function updateStatus(status) {
+            const statusElement = document.getElementById('debug-status');
+            if (!statusElement) return;
+            statusElement.textContent = `Статус: ${status}`;
+        }
 
-      function createUnity() {
-          if (isUnityStarted) return;
-          isUnityStarted = true;
-          loadStartTime = Date.now();
-          
-          updateStatus('Загрузка Unity...');
+        function createUnity() {
+            if (isLoading) return;
+            isLoading = true;
+            
+            updateStatus('Загрузка Unity...');
 
-          createUnityInstance(document.querySelector("#unity-canvas"), {
-              onProgress: (progress) => {
-                  updateStatus(`Загрузка: ${Math.round(progress * 100)}%`);
-              }
-          }).then((instance) => {
-              unityInstance = instance;
-              updateStatus('Игра загружена');
-              
-              // Проверяем состояние каждые 5 секунд
-              setInterval(() => {
-                  if (unityInstance && unityInstance.Module.IsRunning()) {
-                      updateStatus('Игра активна');
-                  }
-              }, 5000);
+            createUnityInstance(document.querySelector("#unity-canvas"), {
+                onProgress: (progress) => {
+                    updateStatus(`Загрузка: ${Math.round(progress * 100)}%`);
+                }
+            }).then((instance) => {
+                unityInstance = instance;
+                isLoading = false;
+                updateStatus('Игра загружена');
+            }).catch((error) => {
+                console.error('Unity error:', error);
+                isLoading = false;
+                updateStatus('Ошибка загрузки');
+            });
+        }
 
-          }).catch((error) => {
-              isUnityStarted = false;
-              updateStatus('Ошибка загрузки Unity');
-              console.error(error);
-          });
-      }
+        // Защита от перезагрузок
+        window.addEventListener('beforeunload', (e) => {
+            if (isLoading) {
+                e.preventDefault();
+                return '';
+            }
+        });
 
-      // Запускаем Unity после полной загрузки страницы
-      if (document.readyState === 'complete') {
-          createUnity();
-      } else {
-          window.addEventListener('load', createUnity);
-      }
-
-      // Блокируем перезагрузку во время загрузки
-      window.addEventListener('beforeunload', (e) => {
-          if (isUnityStarted && !unityInstance) {
-              e.preventDefault();
-              e.returnValue = '';
-              return '';
-          }
-      });
-
-      // Обработка ошибок
-      window.addEventListener('error', (e) => {
-          updateStatus('Произошла ошибка');
-          e.preventDefault();
-      });
+        // Запуск Unity
+        window.addEventListener('load', () => setTimeout(createUnity, 1000));
     </script>
   </body>
 </html>
