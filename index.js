@@ -1,3 +1,36 @@
+// Добавить в начало файла
+self.addEventListener('install', function(e) {
+  e.waitUntil(
+    caches.open(cacheName).then(function(cache) {
+      return cache.addAll(contentToCache).then(() => self.skipWaiting());
+    })
+  );
+});
+
+// Изменить обработчик fetch
+self.addEventListener('fetch', function(e) {
+  // Для критических файлов всегда делаем запрос к серверу
+  if (e.request.url.includes('index.html') || 
+      e.request.url.includes('WebGL.framework.js') ||
+      e.request.url.includes('WebGL.data')) {
+    e.respondWith(
+      fetch(e.request, { cache: 'no-store' })
+        .catch(function() {
+          return caches.match(e.request);
+        })
+    );
+    return;
+  }
+  
+  // Для остальных ресурсов - стандартная стратегия cache-first
+  e.respondWith(
+    caches.match(e.request)
+      .then(function(response) {
+        return response || fetch(e.request);
+      })
+  );
+});
+
 // Регистрация Service Worker
 window.addEventListener("load", function () {
   if ("serviceWorker" in navigator) {
@@ -74,13 +107,13 @@ function unityShowBanner(msg, type) {
 var buildUrl = "Build";
 var loaderUrl = buildUrl + "/ab27b5aca0225add9b5861aa510b55c3.loader.js";
 var config = {
-  dataUrl: buildUrl + "/1006a21122e14e2c64487603c1da264d.data.unityweb",
+  dataUrl: buildUrl + "/c7b0b4aa8477981f7606a0084aceac82.data.unityweb",
   frameworkUrl: buildUrl + "/ddcc48b07ea5017a31867f1ae0bc3a11.framework.js.unityweb",
   codeUrl: buildUrl + "/53abba5fa264817db79adaa12f7bfc05.wasm.unityweb",
   streamingAssetsUrl: "StreamingAssets",
   companyName: "d4rk_ltd",
   productName: "MinePixel",
-  productVersion: "0.1.5",
+  productVersion: "0.1.6",
   showBanner: unityShowBanner,
 };
 
