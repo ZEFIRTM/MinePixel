@@ -3,9 +3,6 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>MinePixel</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
@@ -24,25 +21,112 @@
         </div>
       </div>
       <div id="unity-warning"> </div>
+      <!-- Добавляем индикатор состояния -->
+      <div id="debug-status" style="position: fixed; bottom: 10px; left: 10px; color: white; background: rgba(0,0,0,0.5); padding: 5px; font-size: 12px;"></div>
     </div>
     <script src="index.js"></script>
     <script>
-      window.addEventListener('error', function(e) {
-        console.error('Runtime error:', e);
-        e.preventDefault();
-      });
-
-      // Предотвращение бесконечной перезагрузки на iOS
+      let unityInstance = null;
+      let isLoading = true;
+      let lastReloadTime = 0;
+      const RELOAD_COOLDOWN = 5000; // 5 секунд между перезагрузками
       let reloadAttempts = 0;
       const MAX_RELOAD_ATTEMPTS = 3;
 
+      // Функция обновления статуса
+      function updateStatus(status) {
+        const statusElement = document.getElementById('debug-status');
+        statusElement.textContent = `Статус: ${status} | Попытки: ${reloadAttempts}`;
+      }
+
+      // Отслеживание ошибок
+      window.addEventListener('error', function(e) {
+        console.error('Runtime error:', e);
+        e.preventDefault();
+        logError('Runtime error: ' + e.message);
+      });
+
+      // Предотвращение частых перезагрузок
+      function shouldAllowReload() {
+        const now = Date.now();
+        if (now - lastReloadTime < RELOAD_COOLDOWN) {
+          return false;
+        }
+        lastReloadTime = now;
+        return true;
+      }
+
+      // Логгирование для отладки
+      function logError(message) {
+        const log = {
+          timestamp: new Date().toISOString(),
+          message: message,
+          userAgent: navigator.userAgent,
+          isLoading: isLoading
+        };
+        console.warn('Debug log:', log);
+      }
+
+      // Обработка загрузки Unity
+      window.unityInstance = {
+        onProgress: function(progress) {
+          console.log('Loading progress:', progress);
+        },
+        onSuccess: function() {
+          isLoading = false;
+          console.log('Unity loaded successfully');
+        },
+        onError: function(message) {
+          logError('Unity error: ' + message);
+        }
+      };
+
+      // Контроль перезагрузок
       window.addEventListener('load', function() {
-        if (reloadAttempts >= MAX_RELOAD_ATTEMPTS) {
-          console.error('Max reload attempts reached');
+        if (reloadAttempts >= MAX_RELOAD_ATTEMPTS || !shouldAllowReload()) {
+          console.warn('Reload prevented');
+          updateStatus('Достигнут лимит перезагрузок');
           return;
         }
         reloadAttempts++;
+        updateStatus('Загрузка...');
       });
+
+      // Блокировка автоперезагрузки
+      let isUnityStarted = false;
+      
+      function createUnity() {
+        if (isUnityStarted) return;
+        isUnityStarted = true;
+        
+        createUnityInstance(document.querySelector("#unity-canvas"), {
+          // ...existing Unity config...
+        }).then((instance) => {
+          unityInstance = instance;
+          isLoading = false;
+          updateStatus('Загружено');
+        }).catch((error) => {
+          isUnityStarted = false;
+          updateStatus('Ошибка загрузки');
+        });
+      }
+
+      // Предотвращение reload loop
+      window.addEventListener('beforeunload', function(e) {
+        if (isLoading || !isUnityStarted) {
+          e.preventDefault();
+          e.returnValue = '';
+          updateStatus('Предотвращена перезагрузка');
+          return false;
+        }
+      });
+
+      // Запуск Unity только после полной загрузки страницы
+      if (document.readyState === 'complete') {
+        createUnity();
+      } else {
+        window.addEventListener('load', createUnity);
+      }
     </script>
   </body>
 </html>
