@@ -32,57 +32,17 @@ self.addEventListener('fetch', function(e) {
 });
 
 // Регистрация Service Worker
-window.addEventListener("load", function () {
-  if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("ServiceWorker.js")
-          .then(function (registration) {
-              console.log('[Service Worker] Зарегистрирован:', registration);
-
-              // Если уже есть ожидающий обновления Service Worker
-              if (registration.waiting) {
-                  console.log('[Service Worker] Новая версия ожидает активации. Активируем...');
-                  registration.waiting.postMessage('SKIP_WAITING');
-              }
-
-              // Отслеживаем установку новой версии Service Worker
-              registration.addEventListener('updatefound', function () {
-                  const newWorker = registration.installing;
-                  console.log('[Service Worker] Найдена новая версия. Устанавливается...');
-
-                  newWorker.addEventListener('statechange', function () {
-                      if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                          console.log('[Service Worker] Новая версия установлена. Перезагрузка страницы...');
-                          location.reload(); // Перезагружаем страницу для загрузки новой версии
-                      }
-                  });
-              });
-          })
-          .catch(function (error) {
-              console.error('[Service Worker] Ошибка регистрации:', error);
-          });
-
-      // Обработка изменения контроллера Service Worker
-      navigator.serviceWorker.addEventListener('controllerchange', function () {
-          console.log('[Service Worker] Контроллер изменён. Перезагрузка страницы...');
-          location.reload(); // Обновляем страницу, когда новая версия Service Worker активируется
-      });
-  }
-});
-
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('ServiceWorker.js')
-        .then(registration => {
-            registration.update();
-            
-            registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'activated') {
-                        window.location.reload();
-                    }
-                });
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('ServiceWorker.js')
+            .then(registration => {
+                console.log('ServiceWorker registered');
+                registration.update();
+            })
+            .catch(error => {
+                console.error('ServiceWorker registration failed:', error);
             });
-        });
+    });
 }
 
 // Остальная часть кода
@@ -123,13 +83,13 @@ function unityShowBanner(msg, type) {
 var buildUrl = "Build";
 var loaderUrl = buildUrl + "/ab27b5aca0225add9b5861aa510b55c3.loader.js";
 var config = {
-  dataUrl: buildUrl + "/dbfc84396fd6d22aa6bb0bb5be6bc412.data.unityweb",
+  dataUrl: buildUrl + "/8ae5aaf9d82306905f951162d94b265a.data.unityweb",
   frameworkUrl: buildUrl + "/ddcc48b07ea5017a31867f1ae0bc3a11.framework.js.unityweb",
   codeUrl: buildUrl + "/53abba5fa264817db79adaa12f7bfc05.wasm.unityweb",
   streamingAssetsUrl: "StreamingAssets",
   companyName: "d4rk_ltd",
   productName: "MinePixel",
-  productVersion: "0.1.9",
+  productVersion: "0.1.10",
   showBanner: unityShowBanner,
 };
 

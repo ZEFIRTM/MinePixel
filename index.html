@@ -30,12 +30,8 @@
     <script src="index.js"></script>
     <script>
       let unityInstance = null;
-      let isLoading = true;
       let isUnityStarted = false;
-      let hasError = false;
-      const LOADING_TIMEOUT = 45000; // 45 секунд
-      let loadingTimeout = null;
-      let initialLoadComplete = false;
+      let loadStartTime = 0;
 
       function updateStatus(status) {
           const statusElement = document.getElementById('debug-status');
@@ -54,44 +50,52 @@
       function createUnity() {
           if (isUnityStarted) return;
           isUnityStarted = true;
-          updateStatus('Инициализация...');
-
-          loadingTimeout = setTimeout(() => {
-              if (!initialLoadComplete) {
-                  updateStatus('Превышено время загрузки');
-              }
-          }, LOADING_TIMEOUT);
+          loadStartTime = Date.now();
+          
+          updateStatus('Загрузка Unity...');
 
           createUnityInstance(document.querySelector("#unity-canvas"), {
               onProgress: (progress) => {
                   updateStatus(`Загрузка: ${Math.round(progress * 100)}%`);
               }
           }).then((instance) => {
-              clearTimeout(loadingTimeout);
               unityInstance = instance;
-              isLoading = false;
-              initialLoadComplete = true;
-              updateStatus('Готово');
+              updateStatus('Игра загружена');
+              
+              // Проверяем состояние каждые 5 секунд
+              setInterval(() => {
+                  if (unityInstance && unityInstance.Module.IsRunning()) {
+                      updateStatus('Игра активна');
+                  }
+              }, 5000);
+
           }).catch((error) => {
-              clearTimeout(loadingTimeout);
               isUnityStarted = false;
-              hasError = true;
-              updateStatus('Ошибка Unity');
+              updateStatus('Ошибка загрузки Unity');
+              console.error(error);
           });
       }
 
-      // Отложенный запуск
-      window.addEventListener('load', () => {
-          setTimeout(createUnity, 1000);
-      });
+      // Запускаем Unity после полной загрузки страницы
+      if (document.readyState === 'complete') {
+          createUnity();
+      } else {
+          window.addEventListener('load', createUnity);
+      }
 
-      // Предотвращение случайных перезагрузок
+      // Блокируем перезагрузку во время загрузки
       window.addEventListener('beforeunload', (e) => {
-          if (isLoading || !initialLoadComplete) {
+          if (isUnityStarted && !unityInstance) {
               e.preventDefault();
               e.returnValue = '';
               return '';
           }
+      });
+
+      // Обработка ошибок
+      window.addEventListener('error', (e) => {
+          updateStatus('Произошла ошибка');
+          e.preventDefault();
       });
     </script>
   </body>
