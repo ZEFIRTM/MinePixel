@@ -33,52 +33,66 @@
       let isLoading = true;
       let isUnityStarted = false;
       let hasError = false;
-      const LOADING_TIMEOUT = 60000; // Увеличим до 60 секунд
+      const LOADING_TIMEOUT = 45000; // 45 секунд
       let loadingTimeout = null;
-      let reloadAttempts = 0;
-      const MAX_RELOAD_ATTEMPTS = 3;
-      
+      let initialLoadComplete = false;
+
       function updateStatus(status) {
           const statusElement = document.getElementById('debug-status');
-          if (statusElement) {
-              // Версия будет подставляться из Unity
-              statusElement.textContent = `Статус: ${status} | Попытки: ${reloadAttempts} | ${unityInstance?.GetGameVersion?.() || 'Загрузка версии...'}`;
+          if (statusElement && unityInstance) {
+              try {
+                  const version = unityInstance.GetGameVersion();
+                  statusElement.textContent = `Статус: ${status} | v${version}`;
+              } catch {
+                  statusElement.textContent = `Статус: ${status}`;
+              }
+          } else if (statusElement) {
+              statusElement.textContent = `Статус: ${status}`;
           }
       }
 
       function createUnity() {
-          if (isUnityStarted || hasError) return;
-          
+          if (isUnityStarted) return;
           isUnityStarted = true;
-          isLoading = true;
-          updateStatus('Инициализация Unity...');
-          
+          updateStatus('Инициализация...');
+
           loadingTimeout = setTimeout(() => {
-              if (isLoading) {
-                  hasError = true;
-                  updateStatus('Таймаут загрузки');
-                  // Не делаем автоматический reload
+              if (!initialLoadComplete) {
+                  updateStatus('Превышено время загрузки');
               }
           }, LOADING_TIMEOUT);
 
           createUnityInstance(document.querySelector("#unity-canvas"), {
-              // ...existing config...
+              onProgress: (progress) => {
+                  updateStatus(`Загрузка: ${Math.round(progress * 100)}%`);
+              }
           }).then((instance) => {
               clearTimeout(loadingTimeout);
               unityInstance = instance;
               isLoading = false;
-              updateStatus('Загрузка завершена');
+              initialLoadComplete = true;
+              updateStatus('Готово');
           }).catch((error) => {
               clearTimeout(loadingTimeout);
-              console.error('Unity error:', error);
               isUnityStarted = false;
               hasError = true;
               updateStatus('Ошибка Unity');
           });
       }
 
-      // Запускаем Unity с задержкой
-      window.addEventListener('load', () => setTimeout(createUnity, 2000));
+      // Отложенный запуск
+      window.addEventListener('load', () => {
+          setTimeout(createUnity, 1000);
+      });
+
+      // Предотвращение случайных перезагрузок
+      window.addEventListener('beforeunload', (e) => {
+          if (isLoading || !initialLoadComplete) {
+              e.preventDefault();
+              e.returnValue = '';
+              return '';
+          }
+      });
     </script>
   </body>
 </html>
