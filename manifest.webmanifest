@@ -1,16 +1,16 @@
 {
-    "name": "MinePixel",
-    "short_name": "MinePixel",
-    "start_url": "./index.html?v=" + Date.now(),
-    "display": "standalone",
-    "background_color": "#000000",
-    "theme_color": "#000000",
-    "description": "MinePixel",
-    "scope": "./",
-    "icons": [{
+  "name": "MinePixel",
+  "short_name": "MinePixel",
+  "start_url": "./index.html?v=" + Date.now(),
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "description": "MinePixel",
+  "scope": "./",
+  "icons": [{
       "src": "TemplateData/icons/unity-logo-dark.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "any maskable"
-    }]
+  }]
 }
