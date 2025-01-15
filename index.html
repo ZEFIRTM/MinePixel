@@ -1,85 +1,27 @@
 <!DOCTYPE html>
 <html lang="en-us">
-<head>
+  <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="-1">
     <title>MinePixel</title>
-    <script>
-        function clearCache() {
-            if ('caches' in window) {
-                caches.keys().then(names => names.forEach(name => caches.delete(name)));
-            }
-            localStorage.clear();
-            sessionStorage.clear();
-        }
-        
-        window.addEventListener('load', clearCache);
-        window.applicationCache && window.applicationCache.abort();
-        
-        const currentVersion = localStorage.getItem('gameVersion');
-        const newVersion = '0.1.14';
-        if (currentVersion !== newVersion) {
-            localStorage.setItem('gameVersion', newVersion);
-            if (currentVersion) location.reload(true);
-        }
-    </script>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
     <link rel="manifest" href="manifest.webmanifest">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@2.0.9/dist/tonconnect-ui.min.js"></script>
     <script src="https://unpkg.com/tonweb@0.0.66/dist/tonweb.js"></script>
-    <script>
-        // Отключаем ServiceWorker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                for(let registration of registrations) {
-                    registration.unregister();
-                }
-            });
-        }
-    </script>
-</head>
-<body>
+  </head>
+  <body>
     <div id="unity-container">
-        <canvas id="unity-canvas"></canvas>
-        <div id="unity-loading-bar">
-            <div id="unity-logo"></div>
-            <div id="unity-progress-bar-empty">
-                <div id="unity-progress-bar-full"></div>
-            </div>
+      <canvas id="unity-canvas" width=1920 height=1080 tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
         </div>
+      </div>
+      <div id="unity-warning"> </div>
     </div>
-
-    <script>
-        let unityInstance = null;
-
-        const config = {
-            dataUrl: "./Build/WebGL.data",
-            frameworkUrl: "./Build/WebGL.framework.js",
-            codeUrl: "./Build/WebGL.wasm",
-            streamingAssetsUrl: "StreamingAssets",
-            companyName: "d4rk_ltd",
-            productName: "MinePixel",
-            productVersion: "0.1.14",
-            showBanner: false
-        };
-
-        createUnityInstance(document.querySelector("#unity-canvas"), config, (progress) => {
-            const progressBarFull = document.querySelector("#unity-progress-bar-full");
-            if (progressBarFull) {
-                progressBarFull.style.width = `${100 * progress}%`;
-            }
-        }).then((instance) => {
-            unityInstance = instance;
-            document.querySelector("#unity-loading-bar").style.display = "none";
-        }).catch((error) => {
-            console.error("Unity загрузка не удалась:", error);
-        });
-    </script>
-    
-</body>
+    <script src="index.js"></script>
+  </body>
 </html>
