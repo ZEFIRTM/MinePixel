@@ -1,9 +1,9 @@
-const cacheName = "d4rk_ltd-MinePixel-0.1.14";
+const cacheName = "d4rk_ltd-MinePixel-0.1.15";
 const contentToCache = [
-    "Build/ab27b5aca0225add9b5861aa510b55c3.loader.js",
+    "Build/0c8a27f901310870bb94836c33fdbdf3.loader.js",
     "Build/ddcc48b07ea5017a31867f1ae0bc3a11.framework.js.unityweb",
-    "Build/355ae7a4b1cebed003e6d7bff3b01b3a.data.unityweb",
-    "Build/53abba5fa264817db79adaa12f7bfc05.wasm.unityweb",
+    "Build/3b7b2ba41ff5e4bea65f17b01c9ef810.data.unityweb",
+    "Build/ae1b18ef78fc3b76b3a88b8e7c798bd1.wasm.unityweb",
     "TemplateData/style.css"
 
 ];
