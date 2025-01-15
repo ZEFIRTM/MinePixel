@@ -1,12 +1,35 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="-1">
     <title>MinePixel</title>
+    <script>
+        // Принудительное отключение кэша
+        function clearCache() {
+            if ('caches' in window) {
+                caches.keys().then(names => names.forEach(name => caches.delete(name)));
+            }
+            localStorage.clear();
+            sessionStorage.clear();
+        }
+        
+        window.addEventListener('load', clearCache);
+        
+        // Предотвращение кэширования
+        window.applicationCache && window.applicationCache.abort();
+        
+        // Принудительное обновление страницы при смене версии
+        const currentVersion = localStorage.getItem('gameVersion');
+        const newVersion = '0.1.13';
+        if (currentVersion !== newVersion) {
+            localStorage.setItem('gameVersion', newVersion);
+            if (currentVersion) location.reload(true);
+        }
+    </script>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
     <link rel="manifest" href="manifest.webmanifest">
@@ -23,62 +46,97 @@
             });
         }
     </script>
-  </head>
-  <body>
+</head>
+<body>
     <div id="unity-container">
-      <canvas id="unity-canvas" width=1920 height=1080 tabindex="-1"></canvas>
-      <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full"></div>
+        <canvas id="unity-canvas"></canvas>
+        <div id="unity-loading-bar">
+            <div id="unity-progress-bar-empty">
+                <div id="unity-progress-bar-full"></div>
+            </div>
         </div>
-      </div>
-      <div id="unity-warning"> </div>
-      <!-- Добавляем индикатор состояния -->
-      <div id="debug-status" style="position: fixed; bottom: 10px; left: 10px; color: white; background: rgba(0,0,0,0.5); padding: 5px; font-size: 12px;"></div>
+        <div id="debug-status"></div>
     </div>
-    <script src="index.js"></script>
+
     <script>
         let unityInstance = null;
-        let isLoading = false;
+        let isUnityStarted = false;
+        let loadingTimeout = null;
 
         function updateStatus(status) {
             const statusElement = document.getElementById('debug-status');
             if (!statusElement) return;
-            statusElement.textContent = `Статус: ${status}`;
+            const version = '0.1.13';
+            statusElement.textContent = `Статус: ${status} | v${version}`;
         }
 
-        function createUnity() {
-            if (isLoading) return;
-            isLoading = true;
-            
-            updateStatus('Загрузка Unity...');
+        function initUnity() {
+            if (isUnityStarted) return;
+            isUnityStarted = true;
 
-            createUnityInstance(document.querySelector("#unity-canvas"), {
-                onProgress: (progress) => {
-                    updateStatus(`Загрузка: ${Math.round(progress * 100)}%`);
+            // Очистка кэша перед загрузкой
+            clearCache();
+
+            const config = {
+                dataUrl: `./Build/WebGL.data?v=${Date.now()}`,
+                frameworkUrl: `./Build/WebGL.framework.js?v=${Date.now()}`,
+                codeUrl: `./Build/WebGL.wasm?v=${Date.now()}`,
+                streamingAssetsUrl: "StreamingAssets",
+                companyName: "d4rk_ltd",
+                productName: "MinePixel",
+                productVersion: "0.1.13",
+                showBanner: false
+            };
+
+            // Установка таймаута загрузки
+            loadingTimeout = setTimeout(() => {
+                if (!unityInstance) {
+                    location.reload(true);
                 }
+            }, 30000);
+
+            createUnityInstance(document.querySelector("#unity-canvas"), config, (progress) => {
+                updateStatus(`Загрузка: ${Math.round(progress * 100)}%`);
             }).then((instance) => {
+                clearTimeout(loadingTimeout);
                 unityInstance = instance;
-                isLoading = false;
                 updateStatus('Игра загружена');
             }).catch((error) => {
-                console.error('Unity error:', error);
-                isLoading = false;
+                clearTimeout(loadingTimeout);
+                console.error(error);
+                isUnityStarted = false;
                 updateStatus('Ошибка загрузки');
             });
         }
 
-        // Защита от перезагрузок
+        // Запуск Unity с задержкой
+        window.addEventListener('load', () => setTimeout(initUnity, 1000));
+
+        // Блокировка случайных перезагрузок
         window.addEventListener('beforeunload', (e) => {
-            if (isLoading) {
+            if (!unityInstance && isUnityStarted) {
                 e.preventDefault();
+                e.returnValue = '';
                 return '';
             }
         });
-
-        // Запуск Unity
-        window.addEventListener('load', () => setTimeout(createUnity, 1000));
     </script>
-  </body>
+    <script>
+        const manifest = {
+            "name": "MinePixel",
+            "short_name": "MinePixel",
+            "start_url": "./index.html?v=" + Date.now(),
+            "display": "standalone",
+            "background_color": "#000000",
+            "theme_color": "#000000",
+            "description": "MinePixel",
+            "icons": [{
+                "src": "TemplateData/icons/unity-logo-dark.png",
+                "sizes": "144x144",
+                "type": "image/png",
+                "purpose": "any maskable"
+            }]
+        };
+    </script>
+</body>
 </html>
