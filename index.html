@@ -45,96 +45,41 @@
 </head>
 <body>
     <div id="unity-container">
-        <canvas id="unity-canvas" width="960" height="600"></canvas>
+        <canvas id="unity-canvas"></canvas>
         <div id="unity-loading-bar">
             <div id="unity-logo"></div>
             <div id="unity-progress-bar-empty">
                 <div id="unity-progress-bar-full"></div>
             </div>
         </div>
-        <div id="debug-status"></div>
     </div>
 
     <script>
         let unityInstance = null;
-        let isUnityStarted = false;
-        let loadingTimeout = null;
 
-        function updateStatus(status) {
-            const statusElement = document.getElementById('debug-status');
-            if (!statusElement) return;
-            const version = '0.1.14';
-            statusElement.textContent = `Статус: ${status} | v${version}`;
-        }
+        const config = {
+            dataUrl: "./Build/WebGL.data",
+            frameworkUrl: "./Build/WebGL.framework.js",
+            codeUrl: "./Build/WebGL.wasm",
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "d4rk_ltd",
+            productName: "MinePixel",
+            productVersion: "0.1.14",
+            showBanner: false
+        };
 
-        function initUnity() {
-            if (isUnityStarted) return;
-            isUnityStarted = true;
-
-            // Очистка кэша перед загрузкой
-            clearCache();
-
-            const config = {
-                dataUrl: `./Build/WebGL.data?v=${Date.now()}`,
-                frameworkUrl: `./Build/WebGL.framework.js?v=${Date.now()}`,
-                codeUrl: `./Build/WebGL.wasm?v=${Date.now()}`,
-                streamingAssetsUrl: "StreamingAssets",
-                companyName: "d4rk_ltd",
-                productName: "MinePixel",
-                productVersion: "0.1.14",
-                showBanner: false
-            };
-
-            // Установка таймаута загрузки
-            loadingTimeout = setTimeout(() => {
-                if (!unityInstance) {
-                    location.reload(true);
-                }
-            }, 30000);
-
-            createUnityInstance(document.querySelector("#unity-canvas"), config, (progress) => {
-                updateStatus(`Загрузка: ${Math.round(progress * 100)}%`);
-            }).then((instance) => {
-                clearTimeout(loadingTimeout);
-                unityInstance = instance;
-                updateStatus('Игра загружена');
-            }).catch((error) => {
-                clearTimeout(loadingTimeout);
-                console.error(error);
-                isUnityStarted = false;
-                updateStatus('Ошибка загрузки');
-            });
-        }
-
-        // Запуск Unity с задержкой
-        window.addEventListener('load', () => setTimeout(initUnity, 1000));
-
-        // Блокировка случайных перезагрузок
-        window.addEventListener('beforeunload', (e) => {
-            if (!unityInstance && isUnityStarted) {
-                e.preventDefault();
-                e.returnValue = '';
-                return '';
+        createUnityInstance(document.querySelector("#unity-canvas"), config, (progress) => {
+            const progressBarFull = document.querySelector("#unity-progress-bar-full");
+            if (progressBarFull) {
+                progressBarFull.style.width = `${100 * progress}%`;
             }
+        }).then((instance) => {
+            unityInstance = instance;
+            document.querySelector("#unity-loading-bar").style.display = "none";
+        }).catch((error) => {
+            console.error("Unity загрузка не удалась:", error);
         });
     </script>
-    <script>
-        const manifest = {
-            "name": "MinePixel",
-            "short_name": "MinePixel",
-            "start_url": "./index.html?v=" + Date.now(),
-            "display": "standalone",
-            "background_color": "#000000",
-            "theme_color": "#000000",
-            "description": "MinePixel",
-            "scope": "./",
-            "icons": [{
-                "src": "TemplateData/icons/unity-logo-dark.png",
-                "sizes": "144x144",
-                "type": "image/png",
-                "purpose": "any maskable"
-            }]
-        };
-    </script>
+    
 </body>
 </html>
