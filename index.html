@@ -8,7 +8,6 @@
     <meta http-equiv="Expires" content="-1">
     <title>MinePixel</title>
     <script>
-        // Принудительное отключение кэша
         function clearCache() {
             if ('caches' in window) {
                 caches.keys().then(names => names.forEach(name => caches.delete(name)));
@@ -18,13 +17,10 @@
         }
         
         window.addEventListener('load', clearCache);
-        
-        // Предотвращение кэширования
         window.applicationCache && window.applicationCache.abort();
         
-        // Принудительное обновление страницы при смене версии
         const currentVersion = localStorage.getItem('gameVersion');
-        const newVersion = '0.1.13';
+        const newVersion = '0.1.14';
         if (currentVersion !== newVersion) {
             localStorage.setItem('gameVersion', newVersion);
             if (currentVersion) location.reload(true);
@@ -67,7 +63,7 @@
         function updateStatus(status) {
             const statusElement = document.getElementById('debug-status');
             if (!statusElement) return;
-            const version = '0.1.13';
+            const version = '0.1.14';
             statusElement.textContent = `Статус: ${status} | v${version}`;
         }
 
@@ -85,7 +81,7 @@
                 streamingAssetsUrl: "StreamingAssets",
                 companyName: "d4rk_ltd",
                 productName: "MinePixel",
-                productVersion: "0.1.13",
+                productVersion: "0.1.14",
                 showBanner: false
             };
 
