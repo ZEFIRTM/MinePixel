@@ -53,15 +53,15 @@ window.addEventListener("load", function ()
   }
 
   var buildUrl = "Build";
-  var loaderUrl = buildUrl + "/de57e39f890eee0469a5180ecbc77a57.loader.js";
+  var loaderUrl = buildUrl + "/2f23d236c53c89a67de904edede8f038.loader.js";
   var config = {
-    dataUrl: buildUrl + "/48a0a56af00067e770b9960e4807c2c8.data.unityweb",
+    dataUrl: buildUrl + "/b7c884a6807f2abca849ec6dae239844.data.unityweb",
     frameworkUrl: buildUrl + "/ddcc48b07ea5017a31867f1ae0bc3a11.framework.js.unityweb",
-    codeUrl: buildUrl + "/e2b508f0b0df8872f606a75a51c5018a.wasm.unityweb",
+    codeUrl: buildUrl + "/6855db44b718b9a28b71daa841c4e016.wasm.unityweb",
     streamingAssetsUrl: "StreamingAssets",
     companyName: "d4rk_ltd",
     productName: "MinePixel",
-    productVersion: "0.1.18",
+    productVersion: "0.1.19",
     showBanner: unityShowBanner,
   };
 
@@ -81,7 +81,7 @@ window.addEventListener("load", function ()
     document.getElementsByTagName('head')[0].appendChild(meta);
   }
 
-  canvas.style.background = "url('" + buildUrl + "/2f271768184e39ba91183604bcb9dd9d.jpg') center / cover";
+  canvas.style.background = "url('" + buildUrl + "/bcabcc8a777dfc26c6c98dbdb4fc2755.jpg') center / cover";
   loadingBar.style.display = "block";
 
   var script = document.createElement("script");
