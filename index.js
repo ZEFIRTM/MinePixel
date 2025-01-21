@@ -120,4 +120,10 @@ window.addEventListener('load', function ()
   console.log(`Telegram Web App opened with version: ${version}`);
   console.log(`Telegram Web App checked` +
       `latest version status with result: ${Telegram.WebApp.isVersionAtLeast(version)}`);
+
+  if (navigator.serviceWorker) {
+    navigator.serviceWorker.register("ServiceWorker.js").then(() => {
+      window.location.reload(true);
+    });
+  }
 });
