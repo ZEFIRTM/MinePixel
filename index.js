@@ -49,13 +49,13 @@ function unityShowBanner(msg, type)
 var buildUrl = "Build";
 var loaderUrl = buildUrl + "/2f23d236c53c89a67de904edede8f038.loader.js";
 var config = {
-  dataUrl: buildUrl + "/acc80dc81094f50157096509212117bd.data.unityweb",
+  dataUrl: buildUrl + "/2be24f842076c69ee157ec39a92695fe.data.unityweb",
   frameworkUrl: buildUrl + "/ddcc48b07ea5017a31867f1ae0bc3a11.framework.js.unityweb",
   codeUrl: buildUrl + "/6855db44b718b9a28b71daa841c4e016.wasm.unityweb",
   streamingAssetsUrl: "StreamingAssets",
   companyName: "d4rk_ltd",
   productName: "MinePixel",
-  productVersion: "0.1.20",
+  productVersion: "0.1.21",
   showBanner: unityShowBanner,
 };
 
