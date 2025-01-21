@@ -1,23 +1,30 @@
-const cacheName = "d4rk_ltd-MinePixel-0.1.19";
-const contentToCache = [
-    "Build/2f23d236c53c89a67de904edede8f038.loader.js",
-    "Build/ddcc48b07ea5017a31867f1ae0bc3a11.framework.js.unityweb",
-    "Build/b7c884a6807f2abca849ec6dae239844.data.unityweb",
-    "Build/6855db44b718b9a28b71daa841c4e016.wasm.unityweb",
-    "TemplateData/style.css"
-
-];
+//#if USE_DATA_CACHING
+// const cacheName = "d4rk_ltd-MinePixel-0.1.20";
+// const contentToCache = [
+//     "Build/2f23d236c53c89a67de904edede8f038.loader.js",
+//     "Build/ddcc48b07ea5017a31867f1ae0bc3a11.framework.js.unityweb",
+//#if USE_THREADS
+//     "Build/",
+//#endif
+//     "Build/acc80dc81094f50157096509212117bd.data.unityweb",
+//     "Build/6855db44b718b9a28b71daa841c4e016.wasm.unityweb",
+//     "TemplateData/style.css"
+// ];
+//#endif
 
 self.addEventListener('install', function (e) {
     console.log('[Service Worker] Install');
     
+//#if USE_DATA_CACHING
     e.waitUntil((async function () {
-      const cache = await caches.open(cacheName);
+      // const cache = await caches.open(cacheName);
       console.log('[Service Worker] Caching all: app shell and content');
-      await cache.addAll(contentToCache);
+      // await cache.addAll(contentToCache);
     })());
+//#endif
 });
 
+//#if USE_DATA_CACHING
 self.addEventListener('fetch', function (e) {
     e.respondWith((async function () {
       let response = await caches.match(e.request);
@@ -25,9 +32,10 @@ self.addEventListener('fetch', function (e) {
       if (response) { return response; }
 
       response = await fetch(e.request);
-      const cache = await caches.open(cacheName);
+      // const cache = await caches.open(cacheName);
       console.log(`[Service Worker] Caching new resource: ${e.request.url}`);
-      cache.put(e.request, response.clone());
+      // cache.put(e.request, response.clone());
       return response;
     })());
 });
+//#endif
