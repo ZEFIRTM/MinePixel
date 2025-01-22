@@ -47,15 +47,15 @@ function unityShowBanner(msg, type)
 }
 
 var buildUrl = "Build";
-var loaderUrl = buildUrl + "/b79e383bc5410c9ff6b5c24d8eaa6a8b.loader.js";
+var loaderUrl = buildUrl + "/f68e626902087fa778361c03aa03074d.loader.js";
 var config = {
-  dataUrl: buildUrl + "/eeed3ed959846b2c5633c7c4b5765a10.data.unityweb",
-  frameworkUrl: buildUrl + "/524f011e466d98ee17cfd6d758f63663.framework.js.unityweb",
-  codeUrl: buildUrl + "/b97c290e28c4a8ec5e12fe4caf29038f.wasm.unityweb",
+  dataUrl: buildUrl + "/4d6de59a51dcf1cb5b90961b2bbcc0c6.data.unityweb",
+  frameworkUrl: buildUrl + "/05079adbe6aa54beadb015444a1ec525.framework.js.unityweb",
+  codeUrl: buildUrl + "/ca83a4eb08c141455a96f863a90870b6.wasm.unityweb",
   streamingAssetsUrl: "StreamingAssets",
   companyName: "d4rk_ltd",
   productName: "MinePixel",
-  productVersion: "0.1.25",
+  productVersion: "0.1.26",
   showBanner: unityShowBanner,
 };
 
@@ -122,7 +122,7 @@ window.addEventListener('load', function ()
       `latest version status with result: ${Telegram.WebApp.isVersionAtLeast(version)}`);
 
   // Простая проверка версии без Service Worker
-  fetch('Build/b97c290e28c4a8ec5e12fe4caf29038f.wasm.unityweb', { 
+  fetch('Build/ca83a4eb08c141455a96f863a90870b6.wasm.unityweb', { 
     method: 'HEAD',
     cache: 'no-store'
   }).then(response => {
