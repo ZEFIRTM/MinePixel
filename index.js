@@ -49,13 +49,13 @@ function unityShowBanner(msg, type)
 var buildUrl = "Build";
 var loaderUrl = buildUrl + "/2f23d236c53c89a67de904edede8f038.loader.js";
 var config = {
-  dataUrl: buildUrl + "/fe52ce621a3daf0a7b1264992bca21d6.data.unityweb",
+  dataUrl: buildUrl + "/7dc3ae069551e04fe67b11cd651e2c30.data.unityweb",
   frameworkUrl: buildUrl + "/ddcc48b07ea5017a31867f1ae0bc3a11.framework.js.unityweb",
   codeUrl: buildUrl + "/6855db44b718b9a28b71daa841c4e016.wasm.unityweb",
   streamingAssetsUrl: "StreamingAssets",
   companyName: "d4rk_ltd",
   productName: "MinePixel",
-  productVersion: "0.1.22",
+  productVersion: "0.1.23",
   showBanner: unityShowBanner,
 };
 
@@ -121,25 +121,19 @@ window.addEventListener('load', function ()
   console.log(`Telegram Web App checked` +
       `latest version status with result: ${Telegram.WebApp.isVersionAtLeast(version)}`);
 
-  // Регистрируем Service Worker для управления кешированием
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('ServiceWorker.js').then(registration => {
-        // Если есть ожидающий Service Worker, активируем его немедленно
-        if (registration.waiting) {
-            registration.waiting.postMessage({type: 'SKIP_WAITING'});
-        }
-        
-        registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    // Новый Service Worker готов, перезагружаем страницу
-                    window.location.reload();
-                }
-            });
-        });
-    }).catch(error => {
-        console.error('Service Worker registration failed:', error);
-    });
-  }
+  // Простая проверка версии без Service Worker
+  fetch('Build/6855db44b718b9a28b71daa841c4e016.wasm.unityweb', { 
+    method: 'HEAD',
+    cache: 'no-store'
+  }).then(response => {
+    const lastModified = response.headers.get('last-modified');
+    const cachedLastModified = localStorage.getItem('lastModified');
+    
+    if (lastModified && lastModified !== cachedLastModified) {
+      localStorage.setItem('lastModified', lastModified);
+      if (cachedLastModified) { // Не перезагружаем при первом запуске
+        window.location.reload(true);
+      }
+    }
+  }).catch(console.error);
 });
