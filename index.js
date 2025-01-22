@@ -49,13 +49,13 @@ function unityShowBanner(msg, type)
 var buildUrl = "Build";
 var loaderUrl = buildUrl + "/2f23d236c53c89a67de904edede8f038.loader.js";
 var config = {
-  dataUrl: buildUrl + "/2be24f842076c69ee157ec39a92695fe.data.unityweb",
+  dataUrl: buildUrl + "/fe52ce621a3daf0a7b1264992bca21d6.data.unityweb",
   frameworkUrl: buildUrl + "/ddcc48b07ea5017a31867f1ae0bc3a11.framework.js.unityweb",
   codeUrl: buildUrl + "/6855db44b718b9a28b71daa841c4e016.wasm.unityweb",
   streamingAssetsUrl: "StreamingAssets",
   companyName: "d4rk_ltd",
   productName: "MinePixel",
-  productVersion: "0.1.21",
+  productVersion: "0.1.22",
   showBanner: unityShowBanner,
 };
 
@@ -121,9 +121,25 @@ window.addEventListener('load', function ()
   console.log(`Telegram Web App checked` +
       `latest version status with result: ${Telegram.WebApp.isVersionAtLeast(version)}`);
 
-  if (navigator.serviceWorker) {
-    navigator.serviceWorker.register("ServiceWorker.js").then(() => {
-      window.location.reload(true);
+  // Регистрируем Service Worker для управления кешированием
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('ServiceWorker.js').then(registration => {
+        // Если есть ожидающий Service Worker, активируем его немедленно
+        if (registration.waiting) {
+            registration.waiting.postMessage({type: 'SKIP_WAITING'});
+        }
+        
+        registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // Новый Service Worker готов, перезагружаем страницу
+                    window.location.reload();
+                }
+            });
+        });
+    }).catch(error => {
+        console.error('Service Worker registration failed:', error);
     });
   }
 });
