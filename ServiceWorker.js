@@ -1,4 +1,4 @@
-const cacheName = "d4rk_ltd-MinePixel-0.1.32";
+const cacheName = "d4rk_ltd-MinePixel-0.1.33";
 
 self.addEventListener('install', function (e) {
     console.log('[Service Worker] Install');
