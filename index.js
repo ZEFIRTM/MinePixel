@@ -1,4 +1,13 @@
-// navigator.serviceWorker.register("ServiceWorker.js");
+// Регистрируем Service Worker с версией
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('ServiceWorker.js?v=0.1.38')
+        .then(function(registration) {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        })
+        .catch(function(err) {
+            console.log('ServiceWorker registration failed: ', err);
+        });
+}
 
 var unityInstanceRef;
 var unsubscribe;
@@ -47,15 +56,15 @@ function unityShowBanner(msg, type)
 }
 
 var buildUrl = "Build";
-var loaderUrl = buildUrl + "/b5807eb6c5d68ce42d22d37ddc0639a6.loader.js";
+var loaderUrl = buildUrl + "/9cb2ea8f9b050198c8b14ee0eb70590e.loader.js?v=0.1.38";
 var config = {
-  dataUrl: buildUrl + "/a9e3d00cae689c53bcefee10f3931213.data.unityweb",
-  frameworkUrl: buildUrl + "/337409b1f995c40997bb95e7e4c096f6.framework.js.unityweb",
-  codeUrl: buildUrl + "/bb8a2953c47eabb6af56171a04301c9f.wasm.unityweb",
+  dataUrl: buildUrl + "/04f658a0bc79c44c5c92ce529836c1a7.data.unityweb?v=0.1.38",
+  frameworkUrl: buildUrl + "/71e71d9ac3cc1d8d334eba64ee012b3c.framework.js.unityweb?v=0.1.38",
+  codeUrl: buildUrl + "/ebbc60e86f78b799b1a46bb5c23421b1.wasm.unityweb?v=0.1.38",
   streamingAssetsUrl: "StreamingAssets",
   companyName: "d4rk_ltd",
   productName: "MinePixel",
-  productVersion: "0.1.34",
+  productVersion: "0.1.38",
   showBanner: unityShowBanner,
 };
 
@@ -75,30 +84,72 @@ if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
   document.getElementsByTagName('head')[0].appendChild(meta);
 }
 
-canvas.style.background = "url('" + buildUrl + "/bcabcc8a777dfc26c6c98dbdb4fc2755.jpg') center / cover";
+canvas.style.background = "url('" + buildUrl + "/bcabcc8a777dfc26c6c98dbdb4fc2755.jpg?v=0.1.38') center / cover";
 loadingBar.style.display = "block";
 
-var script = document.createElement("script");
-script.src = loaderUrl;
+// Функция для принудительного обновления кэша
+function forceCacheUpdate() {
+    if ('caches' in window) {
+        caches.keys().then(function(cacheNames) {
+            return Promise.all(
+                cacheNames.map(function(cacheName) {
+                    if (cacheName.includes('MinePixel-Cache')) {
+                        console.log('Deleting cache:', cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        });
+    }
+}
 
-script.onload = () => 
-{
-  createUnityInstance(canvas, config, (progress) => 
-  {
-    progressBarFull.style.width = 100 * progress + "%";
-  }
-  ).then((unityInstance) => 
-  {
-    unityInstanceRef = unityInstance;
-    loadingBar.style.display = "none";
-  }
-  ).catch((message) => 
-  {
-    alert(message);
-  });
-};
+// Проверяем версию и обновляем кэш при необходимости
+function checkVersionAndUpdate() {
+    const currentVersion = '0.1.38';
+    const storedVersion = localStorage.getItem('gameVersion');
+    
+    if (storedVersion !== currentVersion) {
+        console.log('New version detected:', currentVersion, 'Previous:', storedVersion);
+        localStorage.setItem('gameVersion', currentVersion);
+        
+        // Очищаем кэш и перезагружаем страницу
+        forceCacheUpdate();
+        
+        // Небольшая задержка перед перезагрузкой
+        setTimeout(() => {
+            window.location.reload(true);
+        }, 1000);
+        
+        return true;
+    }
+    
+    return false;
+}
 
-document.body.appendChild(script);
+// Проверяем версию перед загрузкой Unity
+if (!checkVersionAndUpdate()) {
+    var script = document.createElement("script");
+    script.src = loaderUrl;
+
+    script.onload = () => 
+    {
+      createUnityInstance(canvas, config, (progress) => 
+      {
+        progressBarFull.style.width = 100 * progress + "%";
+      }
+      ).then((unityInstance) => 
+      {
+        unityInstanceRef = unityInstance;
+        loadingBar.style.display = "none";
+      }
+      ).catch((message) => 
+      {
+        alert(message);
+      });
+    };
+
+    document.body.appendChild(script);
+}
 
 window.addEventListener('load', function ()
 {
@@ -106,6 +157,7 @@ window.addEventListener('load', function ()
   Telegram.WebApp.expand();
 
   console.log("Telegram Web App has been expanded to full screen");
+  console.log("Game Version: 0.1.38");
 
   var version = Telegram.WebApp.version;
   var versionFloat = parseFloat(version);
@@ -113,7 +165,6 @@ window.addEventListener('load', function ()
   if (versionFloat >= 7.7)
   {
       Telegram.WebApp.disableVerticalSwipes();
-      
       console.log('Activating vertical swipe disable');
   }
 
@@ -121,19 +172,13 @@ window.addEventListener('load', function ()
   console.log(`Telegram Web App checked` +
       `latest version status with result: ${Telegram.WebApp.isVersionAtLeast(version)}`);
 
-  // Простая проверка версии без Service Worker
-  fetch('Build/bb8a2953c47eabb6af56171a04301c9f.wasm.unityweb', { 
-    method: 'HEAD',
-    cache: 'no-store'
-  }).then(response => {
-    const lastModified = response.headers.get('last-modified');
-    const cachedLastModified = localStorage.getItem('lastModified');
-    
-    if (lastModified && lastModified !== cachedLastModified) {
-      localStorage.setItem('lastModified', lastModified);
-      if (cachedLastModified) { // Не перезагружаем при первом запуске
-        window.location.reload(true);
-      }
-    }
-  }).catch(console.error);
+  // Слушаем сообщения от Service Worker
+  if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', function(event) {
+          if (event.data && event.data.type === 'NEW_VERSION') {
+              console.log('New version notification from Service Worker:', event.data.version);
+              // Можно показать уведомление пользователю
+          }
+      });
+  }
 });
