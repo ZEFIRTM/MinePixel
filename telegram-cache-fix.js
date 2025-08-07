@@ -23,6 +23,48 @@
         return Promise.resolve();
     };
     
+    // Улучшенная функция для очистки всех данных кэша
+    window.clearAllCache = function() {
+        console.log('Clearing all cache data...');
+        
+        // Очищаем localStorage (кроме критических данных)
+        const keysToKeep = ['gameVersion', 'lastModified'];
+        const allKeys = Object.keys(localStorage);
+        allKeys.forEach(key => {
+            if (!keysToKeep.includes(key)) {
+                localStorage.removeItem(key);
+                console.log('Removed localStorage key:', key);
+            }
+        });
+        
+        // Очищаем sessionStorage
+        sessionStorage.clear();
+        console.log('Cleared sessionStorage');
+        
+        // Очищаем кэши
+        return forceCacheUpdate().then(() => {
+            console.log('Cache clearing completed');
+        });
+    };
+    
+    // Функция для принудительного обновления без перезагрузки
+    window.forceDataRefresh = function() {
+        console.log('Forcing data refresh...');
+        
+        // Очищаем кэш
+        clearAllCache();
+        
+        // Отправляем событие для Unity
+        if (window.unityInstanceRef) {
+            try {
+                window.unityInstanceRef.SendMessage('SupabaseManager', 'ForceRefreshUserDataFromJS');
+                console.log('Sent refresh message to Unity');
+            } catch (e) {
+                console.log('Failed to send message to Unity:', e);
+            }
+        }
+    };
+    
     // Функция для проверки и обновления версии
     window.checkVersionAndUpdate = function() {
         const currentVersion = VERSION;
@@ -63,22 +105,20 @@
         }
     };
     
-    // Функция для очистки всех данных кэша
-    window.clearAllCache = function() {
-        // Очищаем localStorage
-        const keysToKeep = ['gameVersion', 'lastModified'];
-        const allKeys = Object.keys(localStorage);
-        allKeys.forEach(key => {
-            if (!keysToKeep.includes(key)) {
-                localStorage.removeItem(key);
+    // Функция для периодической проверки данных
+    window.startPeriodicDataCheck = function(interval = 30000) { // 30 секунд по умолчанию
+        console.log('Starting periodic data check every', interval, 'ms');
+        
+        setInterval(() => {
+            if (window.unityInstanceRef) {
+                try {
+                    window.unityInstanceRef.SendMessage('SupabaseManager', 'QuickDataCheckFromJS');
+                    console.log('Periodic data check sent to Unity');
+                } catch (e) {
+                    console.log('Periodic data check failed:', e);
+                }
             }
-        });
-        
-        // Очищаем sessionStorage
-        sessionStorage.clear();
-        
-        // Очищаем кэши
-        return forceCacheUpdate();
+        }, interval);
     };
     
     // Автоматическая проверка при загрузке страницы
@@ -92,11 +132,15 @@
         
         // Добавляем обработчик для принудительного обновления
         window.addEventListener('focus', function() {
-            // При возвращении в приложение проверяем версию
+            // При возвращении в приложение проверяем версию и данные
             setTimeout(() => {
                 checkVersionAndUpdate();
+                forceDataRefresh();
             }, 1000);
         });
+        
+        // Запускаем периодическую проверку данных
+        startPeriodicDataCheck();
     });
     
     // Обработчик для Service Worker сообщений
@@ -109,12 +153,24 @@
         });
     }
     
+    // Обработчик для видимости страницы
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            console.log('Page became visible, refreshing data...');
+            setTimeout(() => {
+                forceDataRefresh();
+            }, 500);
+        }
+    });
+    
     // Экспортируем функции для использования в Unity
     window.TelegramCacheFix = {
         forceCacheUpdate: window.forceCacheUpdate,
+        clearAllCache: window.clearAllCache,
+        forceDataRefresh: window.forceDataRefresh,
         checkVersionAndUpdate: window.checkVersionAndUpdate,
         forceTelegramUpdate: window.forceTelegramUpdate,
-        clearAllCache: window.clearAllCache,
+        startPeriodicDataCheck: window.startPeriodicDataCheck,
         version: VERSION
     };
     
