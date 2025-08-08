@@ -199,3 +199,40 @@
     };
 
 })();
+
+// Telegram Stars support helper for invoice links
+(function(){
+  'use strict';
+
+  // Ожидаем, что вы замените этот провайдер реальным запросом к вашему боту
+  // Бот должен создать invoice link через Bot API createInvoiceLink и вернуть URL
+  // См.: https://core.telegram.org/bots/api#createinvoicelink
+  window.telegramStarsGetInvoiceLink = function(payload){
+    // payload = { amount: number, productName: string }
+    console.log('[Stars] Requesting invoice link for', payload);
+
+    // ПРИМЕР: замените fetch URL на ваш endpoint бота
+    // На сервере вы валидируете пользователя (initData), создаёте invoice через Bot API и отдаёте ссылку
+    var apiUrl = (window.STARS_INVOICE_ENDPOINT || '/stars/create-invoice');
+
+    return fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        quantity: payload.amount,
+        productName: payload.productName
+      })
+    })
+    .then(function(r){
+      if (!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    })
+    .then(function(data){
+      if (!data || !data.invoiceLink) throw new Error('No invoiceLink');
+      console.log('[Stars] Received invoice link');
+      return data.invoiceLink;
+    });
+  };
+})();
