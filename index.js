@@ -1,6 +1,6 @@
 // Регистрируем Service Worker с версией
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('ServiceWorker.js?v=0.1.49')
+    navigator.serviceWorker.register('ServiceWorker.js?v=0.1.50')
         .then(function(registration) {
             console.log('ServiceWorker registration successful with scope: ', registration.scope);
         })
@@ -56,15 +56,15 @@ function unityShowBanner(msg, type)
 }
 
 var buildUrl = "Build";
-var loaderUrl = buildUrl + "/76b0c72c6c14321aec92cfc14284d64e.loader.js?v=0.1.49";
+var loaderUrl = buildUrl + "/aa9f0cfc9933173bff11ed30f62103b4.loader.js?v=0.1.50";
 var config = {
-  dataUrl: buildUrl + "/8eebe18eb7209a463deb7ffb5049ddc1.data.unityweb?v=0.1.49",
-  frameworkUrl: buildUrl + "/14df50baf6621bc637cf29d9b0e7950e.framework.js.unityweb?v=0.1.49",
-  codeUrl: buildUrl + "/3c8475e3161ea8f2915553357381bde9.wasm.unityweb?v=0.1.49",
+  dataUrl: buildUrl + "/c6a071938ca106554ac40d925ced22ff.data.unityweb?v=0.1.50",
+  frameworkUrl: buildUrl + "/14df50baf6621bc637cf29d9b0e7950e.framework.js.unityweb?v=0.1.50",
+  codeUrl: buildUrl + "/66eacdb3dcb0231c59c016fad0675b2d.wasm.unityweb?v=0.1.50",
   streamingAssetsUrl: "StreamingAssets",
   companyName: "d4rk_ltd",
   productName: "MinePixel",
-  productVersion: "0.1.49",
+  productVersion: "0.1.50",
   showBanner: unityShowBanner,
 };
 
@@ -84,7 +84,7 @@ if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
   document.getElementsByTagName('head')[0].appendChild(meta);
 }
 
-canvas.style.background = "url('" + buildUrl + "/bcabcc8a777dfc26c6c98dbdb4fc2755.jpg?v=0.1.49') center / cover";
+canvas.style.background = "url('" + buildUrl + "/bcabcc8a777dfc26c6c98dbdb4fc2755.jpg?v=0.1.50') center / cover";
 loadingBar.style.display = "block";
 
 // Функция для принудительного обновления кэша
@@ -105,7 +105,7 @@ function forceCacheUpdate() {
 
 // Проверяем версию и обновляем кэш при необходимости
 function checkVersionAndUpdate() {
-    const currentVersion = '0.1.49';
+    const currentVersion = '0.1.50';
     const storedVersion = localStorage.getItem('gameVersion');
     
     if (storedVersion !== currentVersion) {
@@ -157,7 +157,7 @@ window.addEventListener('load', function ()
   Telegram.WebApp.expand();
 
   console.log("Telegram Web App has been expanded to full screen");
-  console.log("Game Version: 0.1.49");
+  console.log("Game Version: 0.1.50");
 
   var version = Telegram.WebApp.version;
   var versionFloat = parseFloat(version);
