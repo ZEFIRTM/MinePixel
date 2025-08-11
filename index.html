@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
-    <title>MinePixel v0.1.52</title>
+    <title>MinePixel v0.1.53</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
     <link rel="manifest" href="manifest.webmanifest">
@@ -21,6 +21,10 @@
     <script src="security.js"></script>
     <script src="obfuscator.js"></script>
     <script src="telegram-stars-support.js"></script>
+    <script>
+      // Expose current URL to Unity (for GetURLFromPage)
+      window.GetURLFromPage = function() { return window.location.href; };
+    </script>
   </head>
   <body>
     <div id="unity-container">
