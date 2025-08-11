@@ -1,7 +1,7 @@
 {
     "name": "MinePixel",
     "short_name": "MinePixel",
-    "start_url": "index.html?v=0.1.50",
+    "start_url": "index.html?v=0.1.51",
     "display": "fullscreen",
     "background_color": "#FFFFFF",
     "theme_color": "#000",
