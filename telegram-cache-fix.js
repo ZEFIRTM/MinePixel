@@ -4,7 +4,7 @@
 (function() {
     'use strict';
     
-    const VERSION = '0.1.79';
+    const VERSION = '{{{ PRODUCT_VERSION }}}';
     const CACHE_PREFIX = 'MinePixel-Cache';
     
     // Функция для принудительной очистки всех кэшей
