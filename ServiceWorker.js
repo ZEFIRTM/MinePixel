@@ -1,7 +1,7 @@
-const cacheName = 'MinePixel-Cache-v0.2.34';
+const cacheName = 'MinePixel-Cache-v0.2.35';
 
 self.addEventListener('install', function (e) {
-    console.log('[Service Worker] Install - Version 0.2.34');
+    console.log('[Service Worker] Install - Version 0.2.35');
     self.skipWaiting(); // Принудительно активируем новый Service Worker
     
     // Очищаем все старые кеши при установке
@@ -21,7 +21,7 @@ self.addEventListener('install', function (e) {
 
 self.addEventListener('fetch', function (e) {
     // Для файлов билда всегда получаем свежую версию
-    if (e.request.url.includes('Build/') || e.request.url.includes('0.2.34')) {
+    if (e.request.url.includes('Build/') || e.request.url.includes('0.2.35')) {
         e.respondWith(
             fetch(e.request, {
                 cache: 'no-store',
@@ -54,7 +54,7 @@ self.addEventListener('activate', (event) => {
                 clients.forEach((client) => {
                     client.postMessage({
                         type: 'NEW_VERSION',
-                        version: '0.2.34'
+                        version: '0.2.35'
                     });
                 });
             });
