@@ -1,0 +1,23 @@
+name: bot_tick
+
+on:
+  schedule:
+    - cron: '*/1 * * * *'   # каждые 1 минуту
+  workflow_dispatch:
+
+jobs:
+  invoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call bot_tick 12 times with jitter
+        env:
+          FUNC_URL: ${{ secrets.FUNC_URL }}
+          ANON_KEY: ${{ secrets.ANON_KEY }}
+        run: |
+          for i in $(seq 1 12); do
+            curl -sS -X POST "$FUNC_URL" \
+              -H "Authorization: Bearer $ANON_KEY" \
+              -H "Content-Type: application/json" \
+              -d '{}' || true
+            sleep 5
+          done
