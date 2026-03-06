@@ -100,11 +100,11 @@ function unityShowBanner(msg, type)
 }
 
 var buildUrl = "Build";
-var loaderUrl = buildUrl + "/18ba98a9afeb2d74ce6f3846420852b3.loader.js?v=0.2.54";
+var loaderUrl = buildUrl + "/9d7cab4728ccd937dc67c61075ac8f38.loader.js?v=0.2.54";
 var config = {
-  dataUrl: buildUrl + "/5a996cf0dd36a029873078d2a412b9e0.data.unityweb?v=0.2.54",
-  frameworkUrl: buildUrl + "/c7d00c5abe54cb8d28392f4ab9fa1d59.framework.js.unityweb?v=0.2.54",
-  codeUrl: buildUrl + "/bf01ce14fb20257f526b3efa8dcde363.wasm.unityweb?v=0.2.54",
+  dataUrl: buildUrl + "/59ee87b29be5aba4229b07b2f4f1f805.data.unityweb?v=0.2.54",
+  frameworkUrl: buildUrl + "/e0be99d1e31c518f3a6df74fce6295d9.framework.js.unityweb?v=0.2.54",
+  codeUrl: buildUrl + "/95a64704c7d8bb1fc7e004d681d56927.wasm.unityweb?v=0.2.54",
   streamingAssetsUrl: "StreamingAssets",
   companyName: "d4rk_ltd",
   productName: "MinePixel",
