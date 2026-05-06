@@ -1,6 +1,6 @@
 // Регистрируем Service Worker с версией
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('ServiceWorker.js?v=0.3.6')
+    navigator.serviceWorker.register('ServiceWorker.js?v=0.3.7')
         .then(function(registration) {
             console.log('ServiceWorker registration successful with scope: ', registration.scope);
         })
@@ -19,30 +19,42 @@ var warningBanner = document.querySelector("#unity-warning");
 
 function attachTelegramParamsToUrl() {
   try {
-    if (!window.Telegram || !Telegram.WebApp || !Telegram.WebApp.initDataUnsafe) return;
-    const init = Telegram.WebApp.initDataUnsafe;
-    const tgUser = init.user || {};
-    const userId = tgUser.id ? String(tgUser.id) : '';
-    const username = tgUser.username || '';
-    const name = [tgUser.first_name || '', tgUser.last_name || ''].filter(Boolean).join(' ');
-    
-    // Пытаемся получить photo_url разными способами
-    let photoUrl = tgUser.photo_url || '';
-    
-    console.log(`[Telegram] User Data: id=${userId}, username=${username}, photo=${photoUrl ? 'Found' : 'NOT FOUND'}`);
+    const tg = window.Telegram ? window.Telegram.WebApp : null;
+    if (!tg || !tg.initDataUnsafe || !tg.initDataUnsafe.user) {
+        console.log('[Telegram] No user data available yet');
+        return;
+    }
 
+    const user = tg.initDataUnsafe.user;
+    const userId = String(user.id);
+    const username = user.username || '';
+    const name = [user.first_name || '', user.last_name || ''].filter(Boolean).join(' ');
+    const photoUrl = user.photo_url || '';
+
+    console.log(`[Telegram] SUCCESS: Found User ${userId}, Photo: ${photoUrl}`);
+
+    // Используем URLSearchParams для чистоты
     const url = new URL(window.location.href);
-    if (userId && !url.searchParams.get('telegram_id')) url.searchParams.set('telegram_id', userId);
-    if (username && !url.searchParams.get('username')) url.searchParams.set('username', username);
-    if (name && !url.searchParams.get('name')) url.searchParams.set('name', name);
-    if (photoUrl && !url.searchParams.get('photo_url')) url.searchParams.set('photo_url', photoUrl);
+    url.searchParams.set('telegram_id', userId);
+    if (username) url.searchParams.set('username', username);
+    if (name) url.searchParams.set('name', name);
+    if (photoUrl) url.searchParams.set('photo_url', photoUrl);
 
+    // Обновляем хэш (Unity часто читает именно его)
+    const hashParams = new URLSearchParams();
+    hashParams.set('telegram_id', userId);
+    if (username) hashParams.set('username', username);
+    if (name) hashParams.set('name', name);
+    if (photoUrl) hashParams.set('photo_url', photoUrl);
+    
+    window.location.hash = hashParams.toString();
+    
     const newHref = url.toString();
     if (newHref !== window.location.href) {
       window.history.replaceState({}, document.title, newHref);
     }
   } catch (e) {
-    console.warn('attachTelegramParamsToUrl error', e);
+    console.error('[Telegram] Critical error in attachTelegramParamsToUrl:', e);
   }
 }
 
@@ -107,15 +119,15 @@ function unityShowBanner(msg, type)
 }
 
 var buildUrl = "Build";
-var loaderUrl = buildUrl + "/da711ab3ff047253441d57eccc944ab9.loader.js?v=0.3.6";
+var loaderUrl = buildUrl + "/79a555f4ae768fc8c28069dc211398ae.loader.js?v=0.3.7";
 var config = {
-  dataUrl: buildUrl + "/c30b655fdc260d23140e4fc697b4e5b4.data.unityweb?v=0.3.6",
-  frameworkUrl: buildUrl + "/af7abffe9c91232473c1db30d48234b2.framework.js.unityweb?v=0.3.6",
-  codeUrl: buildUrl + "/cd4b06873d3707a6b4ddec91d576a904.wasm.unityweb?v=0.3.6",
+  dataUrl: buildUrl + "/4e92f40a0c9a4ff8f1ff42ffbedd19e9.data.unityweb?v=0.3.7",
+  frameworkUrl: buildUrl + "/af7abffe9c91232473c1db30d48234b2.framework.js.unityweb?v=0.3.7",
+  codeUrl: buildUrl + "/23007fd76b7766920e179b7e4b6619f6.wasm.unityweb?v=0.3.7",
   streamingAssetsUrl: "StreamingAssets",
   companyName: "d4rk_ltd",
   productName: "MinePixel",
-  productVersion: "0.3.6",
+  productVersion: "0.3.7",
   showBanner: unityShowBanner,
 };
 
@@ -135,7 +147,7 @@ if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
   document.getElementsByTagName('head')[0].appendChild(meta);
 }
 
-canvas.style.background = "url('" + buildUrl + "/bcabcc8a777dfc26c6c98dbdb4fc2755.jpg?v=0.3.6') center / cover";
+canvas.style.background = "url('" + buildUrl + "/bcabcc8a777dfc26c6c98dbdb4fc2755.jpg?v=0.3.7') center / cover";
 loadingBar.style.display = "block";
 
 // Функция для принудительного обновления кэша
@@ -156,7 +168,7 @@ function forceCacheUpdate() {
 
 // Проверяем версию и обновляем кэш при необходимости
 function checkVersionAndUpdate() {
-    const currentVersion = '0.3.6';
+    const currentVersion = '0.3.7';
     const storedVersion = localStorage.getItem('gameVersion');
     
     if (storedVersion !== currentVersion) {
@@ -211,7 +223,7 @@ window.addEventListener('load', function ()
   attachTelegramParamsToUrl();
 
   console.log("Telegram Web App has been expanded to full screen");
-  console.log("Game Version: 0.3.6");
+  console.log("Game Version: 0.3.7");
 
   var version = Telegram.WebApp.version;
   var versionFloat = parseFloat(version);
