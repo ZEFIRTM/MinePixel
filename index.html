@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
-    <title>MinePixel v0.3.20</title>
+    <title>MinePixel v0.3.21</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
     <link rel="manifest" href="manifest.webmanifest">
@@ -24,6 +24,25 @@
     <script>
       // Expose current URL to Unity (for GetURLFromPage)
       window.GetURLFromPage = function() { return window.location.href; };
+
+      window.addEventListener('popstate', function (event) {
+        // Если пользователь нажал системную кнопку назад
+        if (typeof unityInstance !== 'undefined' && unityInstance != null) {
+          unityInstance.SendMessage('BackButtonBridge', 'OnBackPressedFromJS');
+          // Возвращаем состояние обратно, чтобы кнопка работала и в следующий раз
+          history.pushState(null, null, window.location.pathname);
+        }
+      });
+
+      // Функции для вызова из Unity
+      window.pushHistoryState = function() {
+        history.pushState(null, null, window.location.pathname);
+      };
+
+      window.popHistoryState = function() {
+        // Мы не вызываем history.back(), так как это вызовет popstate
+        // Мы просто держим историю в одном состоянии
+      };
     </script>
   </head>
   <body>
